@@ -28,6 +28,8 @@ export default function SupportPage() {
   const [filter, setFilter] = useState<'all' | TicketStatus>('all')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  // Vue mobile : 'list' ou 'detail'
+  const [mobileView, setMobileView] = useState<'list' | 'detail'>('list')
 
   useEffect(() => { load() }, [filter])
 
@@ -40,6 +42,12 @@ export default function SupportPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSelectTicket = (ticket: Ticket) => {
+    setSelected(ticket)
+    setReply('')
+    setMobileView('detail') // ← bascule sur le détail sur mobile
   }
 
   const handleReply = async () => {
@@ -75,51 +83,203 @@ export default function SupportPage() {
     CLOSED: '🔒 Fermé',
   }[s])
 
+  // Panel détail — partagé mobile/desktop
+  const DetailPanel = () => (
+    selected ? (
+      <div className="flex flex-col h-full">
+        {/* Bouton retour mobile */}
+        <div className="md:hidden flex items-center gap-2 p-4 border-b border-slate-200 flex-shrink-0">
+          <button
+            onClick={() => setMobileView('list')}
+            className="flex items-center gap-1 text-indigo-600 text-sm font-medium"
+          >
+            ← Retour à la liste
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 min-h-0">
+          {/* Header ticket */}
+          <div className="p-4 md:p-6 border-b border-slate-200">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                  {selected.user.name[0]}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 truncate">{selected.user.name}</p>
+                  <p className="text-xs text-slate-500 truncate">{selected.user.email} · {selected.user.country}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor(selected.status)}`}>
+                  {statusLabel(selected.status)}
+                </span>
+                {selected.status !== 'CLOSED' && (
+                  <button
+                    onClick={() => handleClose(selected.id)}
+                    className="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs hover:bg-slate-200 transition"
+                  >
+                    🔒 Fermer
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Message étudiant */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <p className="text-sm font-semibold text-slate-700 mb-2">📋 {selected.subject}</p>
+              <p className="text-sm text-slate-600 leading-relaxed">{selected.message}</p>
+            </div>
+
+            {/* Réponse existante */}
+            {selected.reply && (
+              <div className="bg-green-50 rounded-xl p-4 mt-3 border border-green-100">
+                <p className="text-sm font-semibold text-green-700 mb-2">✅ Votre réponse</p>
+                <p className="text-sm text-slate-600 leading-relaxed">{selected.reply}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Zone réponse */}
+          {selected.status !== 'CLOSED' ? (
+            <div className="p-4 md:p-6">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                {selected.reply ? 'Mettre à jour la réponse' : 'Répondre à l\'étudiant'}
+              </label>
+              <textarea rows={5} value={reply} onChange={e => setReply(e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                placeholder="Rédigez votre réponse... Elle sera envoyée par email à l'étudiant." />
+              <div className="flex gap-3 mt-4 flex-wrap">
+                <button onClick={handleReply} disabled={!reply.trim() || sending}
+                  className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-50">
+                  {sending ? 'Envoi...' : '📨 Envoyer par email'}
+                </button>
+                <button onClick={() => setReply('')}
+                  className="bg-slate-100 text-slate-600 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-200 transition">
+                  Effacer
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">✉️ L'étudiant recevra un email + une notification dans l'app</p>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center p-12 text-slate-400">
+              <div className="text-center">
+                <p className="text-3xl mb-2">🔒</p>
+                <p className="text-sm font-medium">Ticket fermé</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    ) : (
+      <div className="flex-1 flex items-center justify-center text-slate-400">
+        <div className="text-center">
+          <p className="text-4xl mb-3">💬</p>
+          <p className="font-medium">Sélectionnez une demande</p>
+          <p className="text-sm mt-1">pour voir les détails et répondre</p>
+        </div>
+      </div>
+    )
+  )
+
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
-      {/* Header fixe */}
+    <div className="flex flex-col h-full" style={{ height: 'calc(100vh - 64px)' }}>
+      {/* Header */}
       <div className="flex-shrink-0 mb-4">
-        <h1 className="text-2xl font-bold text-slate-900">Demandes d'assistance</h1>
-        <p className="text-slate-500 mt-1">Aidez les étudiants dans leurs candidatures</p>
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900">Demandes d'assistance</h1>
+        <p className="text-slate-500 mt-1 text-sm">Aidez les étudiants dans leurs candidatures</p>
       </div>
 
-      {/* Stats fixe */}
+      {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-3 gap-4 mb-4 flex-shrink-0">
+        <div className="grid grid-cols-3 gap-3 md:gap-4 mb-4 flex-shrink-0">
           {[
             { label: 'Total', value: stats.total, color: 'bg-slate-50' },
             { label: 'En attente', value: stats.open, color: 'bg-amber-50' },
             { label: 'Répondus', value: stats.answered, color: 'bg-green-50' },
           ].map(s => (
-            <div key={s.label} className={`${s.color} rounded-xl border border-slate-200 p-4`}>
-              <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-              <p className="text-sm text-slate-500">{s.label}</p>
+            <div key={s.label} className={`${s.color} rounded-xl border border-slate-200 p-3 md:p-4`}>
+              <p className="text-xl md:text-2xl font-bold text-slate-900">{s.value}</p>
+              <p className="text-xs md:text-sm text-slate-500">{s.label}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Contenu principal — prend tout l'espace restant */}
-      <div className="flex gap-6 flex-1 min-h-0">
+      {/* MOBILE — vue liste ou détail */}
+      <div className="md:hidden flex-1 min-h-0 flex flex-col">
+        {mobileView === 'list' ? (
+          <div className="flex flex-col flex-1 min-h-0 gap-3">
+            {/* Filtres */}
+            <div className="flex gap-2 flex-wrap flex-shrink-0">
+              {(['all', 'OPEN', 'ANSWERED', 'CLOSED'] as const).map(f => (
+                <button key={f} onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                    filter === f ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
+                  }`}>
+                  {f === 'all' ? 'Tous' : f === 'OPEN' ? 'En attente' : f === 'ANSWERED' ? 'Répondus' : 'Fermés'}
+                </button>
+              ))}
+            </div>
 
-        {/* Liste tickets — scrollable */}
+            {/* Liste */}
+            <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+              {loading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
+                </div>
+              ) : tickets.length === 0 ? (
+                <div className="text-center text-slate-400 py-8 text-sm">Aucune demande</div>
+              ) : tickets.map(ticket => (
+                <div key={ticket.id} onClick={() => handleSelectTicket(ticket)}
+                  className="bg-white rounded-xl border border-slate-200 p-4 cursor-pointer hover:border-indigo-300 transition active:bg-indigo-50">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {ticket.user.name[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{ticket.user.name}</p>
+                        <p className="text-xs text-slate-500">{ticket.user.country}</p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${statusColor(ticket.status)}`}>
+                      {ticket.status === 'OPEN' ? 'Nouveau' : ticket.status === 'ANSWERED' ? 'Répondu' : 'Fermé'}
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium text-slate-700 truncate">{ticket.subject}</p>
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">{ticket.message}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-slate-400">{new Date(ticket.createdAt).toLocaleDateString('fr-FR')}</p>
+                    <span className="text-xs text-indigo-600 font-medium">Voir →</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          // Vue détail mobile
+          <div className="flex-1 bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col min-h-0">
+            <DetailPanel />
+          </div>
+        )}
+      </div>
+
+      {/* DESKTOP — deux colonnes */}
+      <div className="hidden md:flex gap-6 flex-1 min-h-0">
+        {/* Liste */}
         <div className="w-80 flex flex-col min-h-0 gap-3">
-          {/* Filtres */}
-          <div className="flex gap-2 flex-shrink-0 flex-wrap">
+          <div className="flex gap-2 flex-wrap flex-shrink-0">
             {(['all', 'OPEN', 'ANSWERED', 'CLOSED'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
+              <button key={f} onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                   filter === f ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
-                }`}
-              >
+                }`}>
                 {f === 'all' ? 'Tous' : f === 'OPEN' ? 'En attente' : f === 'ANSWERED' ? 'Répondus' : 'Fermés'}
               </button>
             ))}
           </div>
 
-          {/* Liste scrollable */}
           <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0">
             {loading ? (
               <div className="flex items-center justify-center h-32">
@@ -128,13 +288,10 @@ export default function SupportPage() {
             ) : tickets.length === 0 ? (
               <div className="text-center text-slate-400 py-8 text-sm">Aucune demande</div>
             ) : tickets.map(ticket => (
-              <div
-                key={ticket.id}
-                onClick={() => { setSelected(ticket); setReply('') }}
+              <div key={ticket.id} onClick={() => handleSelectTicket(ticket)}
                 className={`bg-white rounded-xl border p-4 cursor-pointer transition ${
                   selected?.id === ticket.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
+                }`}>
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
@@ -157,106 +314,9 @@ export default function SupportPage() {
           </div>
         </div>
 
-        {/* Détail ticket — scrollable */}
+        {/* Détail */}
         <div className="flex-1 bg-white rounded-2xl border border-slate-200 flex flex-col min-h-0 overflow-hidden">
-          {selected ? (
-            <>
-              {/* Header scrollable */}
-              <div className="overflow-y-auto flex-1 min-h-0">
-                <div className="p-6 border-b border-slate-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
-                        {selected.user.name[0]}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">{selected.user.name}</p>
-                        <p className="text-sm text-slate-500">{selected.user.email} · {selected.user.country}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor(selected.status)}`}>
-                        {statusLabel(selected.status)}
-                      </span>
-                      {selected.status !== 'CLOSED' && (
-                        <button
-                          onClick={() => handleClose(selected.id)}
-                          className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm hover:bg-slate-200 transition"
-                        >
-                          🔒 Fermer
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Message étudiant */}
-                  <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-slate-700 mb-2">📋 {selected.subject}</p>
-                    <p className="text-sm text-slate-600 leading-relaxed">{selected.message}</p>
-                  </div>
-
-                  {/* Réponse existante */}
-                  {selected.reply && (
-                    <div className="bg-green-50 rounded-xl p-4 mt-3 border border-green-100">
-                      <p className="text-sm font-semibold text-green-700 mb-2">✅ Votre réponse</p>
-                      <p className="text-sm text-slate-600 leading-relaxed">{selected.reply}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Zone de réponse */}
-                {selected.status !== 'CLOSED' && (
-                  <div className="p-6">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      {selected.reply ? 'Mettre à jour la réponse' : 'Répondre à l\'étudiant'}
-                    </label>
-                    <textarea
-                      rows={5}
-                      value={reply}
-                      onChange={e => setReply(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                      placeholder="Rédigez votre réponse... Elle sera envoyée par email à l'étudiant."
-                    />
-                    <div className="flex gap-3 mt-4">
-                      <button
-                        onClick={handleReply}
-                        disabled={!reply.trim() || sending}
-                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-50"
-                      >
-                        {sending ? 'Envoi...' : '📨 Envoyer par email'}
-                      </button>
-                      <button
-                        onClick={() => setReply('')}
-                        className="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl text-sm font-semibold hover:bg-slate-200 transition"
-                      >
-                        Effacer
-                      </button>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2">
-                      ✉️ L'étudiant recevra un email + une notification dans l'app
-                    </p>
-                  </div>
-                )}
-
-                {selected.status === 'CLOSED' && (
-                  <div className="flex items-center justify-center p-12 text-slate-400">
-                    <div className="text-center">
-                      <p className="text-3xl mb-2">🔒</p>
-                      <p className="text-sm font-medium">Ticket fermé</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-slate-400">
-              <div className="text-center">
-                <p className="text-4xl mb-3">💬</p>
-                <p className="font-medium">Sélectionnez une demande</p>
-                <p className="text-sm mt-1">pour voir les détails et répondre</p>
-              </div>
-            </div>
-          )}
+          <DetailPanel />
         </div>
       </div>
     </div>

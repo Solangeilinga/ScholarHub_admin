@@ -304,7 +304,7 @@ export default function EditScholarshipPage() {
               <button key={l.code} type="button" onClick={() => toggle('languages', l.code)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
                   form.languages.includes(l.code) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}>{l.label}</button>
+                }`}>{l.name}</button>
             ))}
           </div>
         </div>

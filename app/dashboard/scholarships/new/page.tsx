@@ -2,46 +2,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
-
-const COUNTRIES = [
-  { code: 'BF', name: '🇧🇫 Burkina Faso' }, { code: 'CI', name: '🇨🇮 Côte d\'Ivoire' },
-  { code: 'SN', name: '🇸🇳 Sénégal' }, { code: 'ML', name: '🇲🇱 Mali' },
-  { code: 'GN', name: '🇬🇳 Guinée' }, { code: 'TG', name: '🇹🇬 Togo' },
-  { code: 'BJ', name: '🇧🇯 Bénin' }, { code: 'NE', name: '🇳🇪 Niger' },
-  { code: 'CM', name: '🇨🇲 Cameroun' }, { code: 'CD', name: '🇨🇩 RD Congo' },
-  { code: 'CG', name: '🇨🇬 Congo' }, { code: 'GA', name: '🇬🇦 Gabon' },
-  { code: 'MG', name: '🇲🇬 Madagascar' }, { code: 'MZ', name: '🇲🇿 Mozambique' },
-  { code: 'TZ', name: '🇹🇿 Tanzanie' }, { code: 'KE', name: '🇰🇪 Kenya' },
-  { code: 'GH', name: '🇬🇭 Ghana' }, { code: 'NG', name: '🇳🇬 Nigeria' },
-  { code: 'ET', name: '🇪🇹 Éthiopie' }, { code: 'ZA', name: '🇿🇦 Afrique du Sud' },
-  { code: 'MA', name: '🇲🇦 Maroc' }, { code: 'TN', name: '🇹🇳 Tunisie' },
-  { code: 'DZ', name: '🇩🇿 Algérie' }, { code: 'EG', name: '🇪🇬 Égypte' },
-  { code: 'UG', name: '🇺🇬 Ouganda' }, { code: 'RW', name: '🇷🇼 Rwanda' },
-  { code: 'ZM', name: '🇿🇲 Zambie' }, { code: 'MR', name: '🇲🇷 Mauritanie' },
-]
-
-const FIELDS = [
-  'Informatique', 'Médecine', 'Droit', 'Économie', 'Ingénierie',
-  'Sciences', 'Agriculture', 'Architecture', 'Éducation', 'Arts',
-  'Environnement', 'Finance', 'Management', 'Santé publique', 'Mathématiques',
-  'Physique', 'Chimie', 'Biologie', 'Sociologie', 'Communication',
-]
-
-const LEVELS = ['LICENCE', 'MASTER', 'DOCTORAT', 'POSTDOC', 'PROFESSIONNEL']
-const TYPES = [
-  { value: 'COMPLETE', label: 'Complète' },
-  { value: 'PARTIELLE', label: 'Partielle' },
-  { value: 'RECHERCHE', label: 'Recherche' },
-  { value: 'ECHANGE', label: 'Échange' },
-  { value: 'FORMATION', label: 'Formation' },
-]
-const LANGUAGES = [
-  { code: 'fr', label: 'Français' },
-  { code: 'en', label: 'Anglais' },
-  { code: 'pt', label: 'Portugais' },
-  { code: 'ar', label: 'Arabe' },
-  { code: 'es', label: 'Espagnol' },
-]
+import COUNTRIES from '@/public/Countries'
+import LEVELS from '@/public/Levels'
+import FIELDS from '@/public/Fields'
+import TYPES from '@/public/Types' 
+import LANGUAGES from '@/public/Languages'
 
 const initialForm = {
   title: '',
@@ -236,7 +201,7 @@ export default function NewScholarshipPage() {
 
         {/* Niveaux */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900 mb-1">🎓 Niveaux d'études *</h2>
+          <h2 className="font-semibold text-slate-900 mb-1">🎓 Niveaux Requis *</h2>
           <p className="text-xs text-slate-400 mb-4">Sélectionnez un ou plusieurs niveaux</p>
           <div className="flex flex-wrap gap-2">
             {LEVELS.map(l => (
@@ -286,17 +251,19 @@ export default function NewScholarshipPage() {
         </div>
 
         {/* Langues */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900 mb-4">🗣️ Langues d'enseignement</h2>
-          <div className="flex flex-wrap gap-2">
-            {LANGUAGES.map(l => (
-              <button key={l.code} type="button" onClick={() => toggle('languages', l.code)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-                  form.languages.includes(l.code) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}>{l.label}</button>
-            ))}
-          </div>
-        </div>
+<div className="bg-white rounded-2xl border border-slate-200 p-6">
+  <h2 className="font-semibold text-slate-900 mb-4">🗣️ Langues d'enseignement</h2>
+  <div className="flex flex-wrap gap-2">
+    {LANGUAGES.map(l => (
+      <button key={l.code} type="button" onClick={() => toggle('languages', l.code)}
+        className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+          form.languages.includes(l.code) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+        }`}>
+        {l.name}  {/* Changez l.label par l.name */}
+      </button>
+    ))}
+  </div>
+</div>
 
         {/* Options */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
@@ -321,7 +288,7 @@ export default function NewScholarshipPage() {
         <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-sm text-indigo-800 space-y-1">
           <p className="font-semibold mb-2">📊 Résumé avant publication</p>
           <p>• {form.countries.length} pays sélectionné(s)</p>
-          <p>• {form.level.length} niveau(x) d'études</p>
+          <p>• {form.level.length} niveau(x) requis</p>
           <p>• {form.fields.length} domaine(s)</p>
           <p>• {form.languages.length} langue(s)</p>
           <p>• {form.benefits ? form.benefits.split('\n').filter(Boolean).length : 0} avantage(s)</p>
@@ -331,7 +298,7 @@ export default function NewScholarshipPage() {
 
         <button type="submit" disabled={loading}
           className="w-full bg-indigo-600 text-white rounded-xl py-4 font-semibold hover:bg-indigo-700 transition disabled:opacity-50 text-base">
-          {loading ? 'Publication en cours...' : '🚀 Publier la bourse'}
+          {loading ? 'Publication en cours...' : ' Publier la bourse'}
         </button>
       </form>
     </div>

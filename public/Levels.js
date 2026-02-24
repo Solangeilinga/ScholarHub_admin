@@ -1,0 +1,2 @@
+const LEVELS = ['BEPC', 'BACCALAUREAT', 'LICENCE', 'MAITRISE', 'MASTER', 'DOCTORAT']
+export default LEVELS;

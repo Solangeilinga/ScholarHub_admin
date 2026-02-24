@@ -2,46 +2,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import api from '@/lib/api'
-
-const COUNTRIES = [
-  { code: 'BF', name: '🇧🇫 Burkina Faso' }, { code: 'CI', name: '🇨🇮 Côte d\'Ivoire' },
-  { code: 'SN', name: '🇸🇳 Sénégal' }, { code: 'ML', name: '🇲🇱 Mali' },
-  { code: 'GN', name: '🇬🇳 Guinée' }, { code: 'TG', name: '🇹🇬 Togo' },
-  { code: 'BJ', name: '🇧🇯 Bénin' }, { code: 'NE', name: '🇳🇪 Niger' },
-  { code: 'CM', name: '🇨🇲 Cameroun' }, { code: 'CD', name: '🇨🇩 RD Congo' },
-  { code: 'CG', name: '🇨🇬 Congo' }, { code: 'GA', name: '🇬🇦 Gabon' },
-  { code: 'MG', name: '🇲🇬 Madagascar' }, { code: 'MZ', name: '🇲🇿 Mozambique' },
-  { code: 'TZ', name: '🇹🇿 Tanzanie' }, { code: 'KE', name: '🇰🇪 Kenya' },
-  { code: 'GH', name: '🇬🇭 Ghana' }, { code: 'NG', name: '🇳🇬 Nigeria' },
-  { code: 'ET', name: '🇪🇹 Éthiopie' }, { code: 'ZA', name: '🇿🇦 Afrique du Sud' },
-  { code: 'MA', name: '🇲🇦 Maroc' }, { code: 'TN', name: '🇹🇳 Tunisie' },
-  { code: 'DZ', name: '🇩🇿 Algérie' }, { code: 'EG', name: '🇪🇬 Égypte' },
-  { code: 'UG', name: '🇺🇬 Ouganda' }, { code: 'RW', name: '🇷🇼 Rwanda' },
-  { code: 'ZM', name: '🇿🇲 Zambie' }, { code: 'MR', name: '🇲🇷 Mauritanie' },
-]
-
-const FIELDS = [
-  'Informatique', 'Médecine', 'Droit', 'Économie', 'Ingénierie',
-  'Sciences', 'Agriculture', 'Architecture', 'Éducation', 'Arts',
-  'Environnement', 'Finance', 'Management', 'Santé publique', 'Mathématiques',
-  'Physique', 'Chimie', 'Biologie', 'Sociologie', 'Communication',
-]
-
-const LEVELS = ['LICENCE', 'MASTER', 'DOCTORAT', 'POSTDOC', 'PROFESSIONNEL']
-const TYPES = [
-  { value: 'COMPLETE', label: 'Complète' },
-  { value: 'PARTIELLE', label: 'Partielle' },
-  { value: 'RECHERCHE', label: 'Recherche' },
-  { value: 'ECHANGE', label: 'Échange' },
-  { value: 'FORMATION', label: 'Formation' },
-]
-const LANGUAGES = [
-  { code: 'fr', label: 'Français' },
-  { code: 'en', label: 'Anglais' },
-  { code: 'pt', label: 'Portugais' },
-  { code: 'ar', label: 'Arabe' },
-  { code: 'es', label: 'Espagnol' },
-]
+import COUNTRIES from '@/public/Countries'
+import LEVELS from '@/public/Levels'
+import FIELDS from '@/public/Fields'
+import LANGUAGES from '@/public/Languages'
+import TYPES from '@/public/Types'
 
 export default function EditScholarshipPage() {
   const router = useRouter()

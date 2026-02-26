@@ -23,4 +23,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+   font-size: 16px; /* taille par défaut plus lisible */
+  line-height: 1.5; 
 }

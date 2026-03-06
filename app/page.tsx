@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { authApi } from '@/lib/api'
 import { setToken } from '@/lib/auth'
@@ -10,6 +10,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    router.prefetch('/dashboard')
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,8 +40,16 @@ export default function LoginPage() {
   <div className="w-full max-w-md">
     {/* Logo */}
     <div className="text-center mb-8">
-      <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <span className="text-white text-3xl">🎓</span>
+      <div className="relative w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden">
+        <span className="text-white text-3xl" aria-hidden>🎓</span>
+        <img
+          src="/logo.png"
+          alt="ScholarHub logo"
+          className="absolute inset-0 w-full h-full object-contain bg-white p-2"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+          }}
+        />
       </div>
       <h1 className="text-3xl font-bold text-slate-900">ScholarHub Admin</h1>
       <p className="text-lg text-slate-600 mt-1">Connectez-vous à votre espace admin</p>

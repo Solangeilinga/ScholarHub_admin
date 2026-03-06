@@ -1,8 +1,76 @@
 import axios from 'axios'
 
 const API_URL ="https://scholarhubbackend-production.up.railway.app/api"
+const GET_CACHE_TTL_MS = 30000
 
-const api = axios.create({ baseURL: API_URL })
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 12000,
+})
+
+type CacheEntry = {
+  expiresAt: number
+  response: unknown
+}
+
+const getCache = new Map<string, CacheEntry>()
+const inflightGet = new Map<string, Promise<unknown>>()
+
+function serializeParams(params?: Record<string, unknown>) {
+  if (!params) return ''
+  return Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}:${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
+    .join('|')
+}
+
+function buildGetCacheKey(url: string, params?: Record<string, unknown>) {
+  return `${url}?${serializeParams(params)}`
+}
+
+function invalidateGetCache(prefixes?: string[]) {
+  if (!prefixes || prefixes.length === 0) {
+    getCache.clear()
+    inflightGet.clear()
+    return
+  }
+  for (const key of getCache.keys()) {
+    if (prefixes.some((prefix) => key.startsWith(prefix))) {
+      getCache.delete(key)
+      inflightGet.delete(key)
+    }
+  }
+}
+
+async function cachedGet<T>(
+  url: string,
+  params?: Record<string, unknown>,
+  ttlMs = GET_CACHE_TTL_MS
+) {
+  const key = buildGetCacheKey(url, params)
+  const now = Date.now()
+  const cached = getCache.get(key)
+
+  if (cached && cached.expiresAt > now) {
+    return cached.response as T
+  }
+
+  const pending = inflightGet.get(key)
+  if (pending) {
+    return pending as Promise<T>
+  }
+
+  const request = api.get(url, { params }).then((response) => {
+    getCache.set(key, { expiresAt: Date.now() + ttlMs, response })
+    return response
+  }).finally(() => {
+    inflightGet.delete(key)
+  })
+
+  inflightGet.set(key, request)
+  return request as Promise<T>
+}
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
@@ -18,25 +86,65 @@ export const authApi = {
 }
 
 export const scholarshipApi = {
-  getAll: (params?: object) => api.get('/scholarships', { params }),
-  getOne: (id: string) => api.get(`/scholarships/${id}`),
-  create: (data: object) => api.post('/scholarships', data),           // /admin/ → /
-  update: (id: string, data: object) => api.put(`/scholarships/${id}`, data),   // /admin/ → /
-  delete: (id: string) => api.delete(`/scholarships/${id}`),           // /admin/ → /
-  getStats: () => api.get('/scholarships/stats'),
-  getAllAdmin: (params?: any) => api.get('/scholarships/admin/all', { params }),
+  getAll: (params?: Record<string, unknown>) => cachedGet('/scholarships', params),
+  getOne: (id: string) => cachedGet(`/scholarships/${id}`),
+  create: async (data: object) => {
+    const res = await api.post('/scholarships', data)
+    invalidateGetCache(['/scholarships'])
+    return res
+  },           // /admin/ → /
+  update: async (id: string, data: object) => {
+    const res = await api.put(`/scholarships/${id}`, data)
+    invalidateGetCache(['/scholarships'])
+    return res
+  },   // /admin/ → /
+  delete: async (id: string) => {
+    const res = await api.delete(`/scholarships/${id}`)
+    invalidateGetCache(['/scholarships'])
+    return res
+  },           // /admin/ → /
+  getStats: () => cachedGet('/scholarships/stats'),
+  getAllAdmin: (params?: Record<string, unknown>) =>
+    cachedGet('/scholarships/admin/all', params),
 }
 
 export const userApi = {
-  getAll: () => api.get('/admin/users'),
-  updateRole: (id: string, role: string) => api.patch(`/admin/users/${id}/role`, { role }),
-  delete: (id: string) => api.delete(`/admin/users/${id}`),
+  getAll: () => cachedGet('/admin/users'),
+  updateRole: async (id: string, role: string) => {
+    const res = await api.patch(`/admin/users/${id}/role`, { role })
+    invalidateGetCache(['/admin/users'])
+    return res
+  },
+  delete: async (id: string) => {
+    const res = await api.delete(`/admin/users/${id}`)
+    invalidateGetCache(['/admin/users'])
+    return res
+  },
 }
 
 export const supportApi = {
-  getAll: (status?: string) => api.get('/support', { params: status ? { status } : {} }),
-  reply: (id: string, reply: string) => api.post(`/support/${id}/reply`, { reply }),
-  close: (id: string) => api.patch(`/support/${id}/close`),
+  getAll: (params?: {
+    status?: string
+    includeStats?: boolean
+    page?: number
+    limit?: number
+  }) =>
+    cachedGet('/support', {
+      ...(params?.status ? { status: params.status } : {}),
+      includeStats: params?.includeStats === false ? '0' : '1',
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 20,
+    }),
+  reply: async (id: string, reply: string) => {
+    const res = await api.post(`/support/${id}/reply`, { reply })
+    invalidateGetCache(['/support'])
+    return res
+  },
+  close: async (id: string) => {
+    const res = await api.patch(`/support/${id}/close`)
+    invalidateGetCache(['/support'])
+    return res
+  },
 }
 
 export default api

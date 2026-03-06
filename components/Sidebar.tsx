@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { removeToken } from '@/lib/auth'
 
@@ -35,8 +36,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   {/* Logo + close btn mobile */}
   <div className="p-6 border-b border-slate-200 flex items-center justify-between">
     <div className="flex items-center gap-4">
-      <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center">
-        <span className="text-white text-2xl">🎓</span>
+      <div className="relative w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center overflow-hidden">
+        <span className="text-white text-2xl" aria-hidden>
+          🎓
+        </span>
+        <Image
+          src="/logo.png"
+          alt="ScholarHub logo"
+          fill
+          sizes="48px"
+          className="absolute inset-0 object-contain bg-white p-1"
+          priority
+        />
       </div>
       <div>
         <p className="font-bold text-slate-900 text-lg">ScholarHub</p>

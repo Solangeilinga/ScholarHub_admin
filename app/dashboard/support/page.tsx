@@ -75,19 +75,19 @@ export default function SupportPage() {
         page: targetPage,
         limit: PAGE_SIZE,
       })
-      const pageTickets = (res.data.tickets ?? []) as Ticket[]
+      const pageTickets = ((res as any).data.tickets ?? []) as Ticket[]
       const mergedTickets = append && cachedEntry
         ? [...cachedEntry.tickets, ...pageTickets]
         : pageTickets
-      const nextHasMore = Boolean(res.data?.pagination?.hasMore)
+      const nextHasMore = Boolean((res as any).data?.pagination?.hasMore)
       cacheRef.current[targetFilter] = {
         tickets: mergedTickets,
         page: targetPage,
         hasMore: nextHasMore,
       }
 
-      if (res.data.stats) {
-        setStats(res.data.stats)
+      if ((res as any) .data.stats) {
+        setStats((res as any).data.stats)
         hasLoadedStatsRef.current = true
       }
 

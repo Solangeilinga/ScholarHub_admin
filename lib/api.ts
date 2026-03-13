@@ -1,11 +1,11 @@
 import axios from 'axios'
 
-const API_URL ="https://scholarhubbackend-production.up.railway.app/api"
+const API_URL = "https://scholarhub-backend-n8de.onrender.com/api"
 const GET_CACHE_TTL_MS = 30000
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 12000,
+  timeout: 30000, // ← 30s pour laisser le temps à Render de se réveiller
 })
 
 type CacheEntry = {
@@ -72,6 +72,11 @@ async function cachedGet<T>(
   return request as Promise<T>
 }
 
+// ← Wake-up Render au chargement de l'admin
+if (typeof window !== 'undefined') {
+  axios.get(`${API_URL.replace('/api', '')}/health`, { timeout: 30000 }).catch(() => {})
+}
+
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('admin_token')
@@ -92,17 +97,17 @@ export const scholarshipApi = {
     const res = await api.post('/scholarships', data)
     invalidateGetCache(['/scholarships'])
     return res
-  },           // /admin/ → /
+  },
   update: async (id: string, data: object) => {
     const res = await api.put(`/scholarships/${id}`, data)
     invalidateGetCache(['/scholarships'])
     return res
-  },   // /admin/ → /
+  },
   delete: async (id: string) => {
     const res = await api.delete(`/scholarships/${id}`)
     invalidateGetCache(['/scholarships'])
     return res
-  },           // /admin/ → /
+  },
   getStats: () => cachedGet('/scholarships/stats'),
   getAllAdmin: (params?: Record<string, unknown>) =>
     cachedGet('/scholarships/admin/all', params),
@@ -145,6 +150,16 @@ export const supportApi = {
     invalidateGetCache(['/support'])
     return res
   },
+}
+
+// ← API scraper
+export const scraperApi = {
+  getPending: () => api.get('/admin/scraper/pending'),
+  getStats: () => api.get('/admin/scraper/stats'),
+  run: () => api.post('/admin/scraper/run'),
+  approve: (id: string) => api.patch(`/admin/scraper/${id}/approve`),
+  reject: (id: string) => api.patch(`/admin/scraper/${id}/reject`),
+  approveAll: (ids: string[]) => api.post('/admin/scraper/approve-all', { ids }),
 }
 
 export default api

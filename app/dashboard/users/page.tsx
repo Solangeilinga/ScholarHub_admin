@@ -12,7 +12,7 @@ export default function UsersPage() {
   const load = async () => {
     try {
       const res = await userApi.getAll()
-      setUsers(res.data.users || [])
+      setUsers((res as any).data.users || [])
     } finally {
       setLoading(false)
     }

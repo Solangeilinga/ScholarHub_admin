@@ -16,13 +16,14 @@ export default function DashboardPage() {
           userApi.getAll(),
           scholarshipApi.getAll({ limit: 5, sort: 'recent' }),
         ])
-        const s = statsRes.data?.stats || statsRes.data
-        setStats({
-          total: s?.total ?? 0,
-          active: s?.active ?? 0,
-          users: usersRes.data?.users?.length ?? 0,
-          applications: 0,
-        })
+        const s = (statsRes as any).data?.stats || (statsRes as any).data
+const users = (usersRes as any).data?.users
+setStats({
+  total: s?.total ?? 0,
+  active: s?.active ?? 0,
+  users: users?.length ?? 0,
+  applications: 0,
+})
         setRecentScholarships(scholarshipsRes.data?.scholarships || [])
       } catch (e) {
         console.error(e)

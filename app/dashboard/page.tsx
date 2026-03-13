@@ -24,7 +24,7 @@ setStats({
   users: users?.length ?? 0,
   applications: 0,
 })
-        setRecentScholarships(scholarshipsRes.data?.scholarships || [])
+        setRecentScholarships((scholarshipsRes as any).data?.scholarships || [])
       } catch (e) {
         console.error(e)
       } finally {

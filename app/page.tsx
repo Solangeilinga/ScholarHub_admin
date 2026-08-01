@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { authApi } from '@/lib/api'
-import { setToken } from '@/lib/auth'
+import { setToken, setCurrentUserId } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -27,6 +27,7 @@ export default function LoginPage() {
         return
       }
       setToken(token)
+      setCurrentUserId(user.id)
       router.push('/dashboard')
     } catch {
       setError('Email ou mot de passe incorrect')

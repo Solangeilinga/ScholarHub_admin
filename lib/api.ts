@@ -115,6 +115,11 @@ export const scholarshipApi = {
 
 export const userApi = {
   getAll: () => cachedGet('/admin/users'),
+  create: async (data: { name: string; email: string; password: string; role: 'USER' | 'ADMIN' }) => {
+    const res = await api.post('/admin/users', data)
+    invalidateGetCache(['/admin/users'])
+    return res
+  },
   updateRole: async (id: string, role: string) => {
     const res = await api.patch(`/admin/users/${id}/role`, { role })
     invalidateGetCache(['/admin/users'])

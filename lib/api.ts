@@ -85,6 +85,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// ← Si le token est périmé/invalide (401), le backend nous le dit
+// explicitement — on nettoie la session locale et on renvoie vers le login
+// au lieu de laisser chaque page échouer silencieusement dans son coin.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user_id')
+      if (window.location.pathname !== '/') {
+        window.location.href = '/'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 export const authApi = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),

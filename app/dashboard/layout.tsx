@@ -7,12 +7,27 @@ import Sidebar from '@/components/Sidebar'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  // null = vérification pas encore faite, true/false = résultat connu.
+  // Tant que c'est null, on n'affiche RIEN du contenu protégé — ça évite
+  // que les pages enfants lancent leurs appels API avant même que la
+  // redirection vers le login ait eu le temps de se déclencher.
+  const [authChecked, setAuthChecked] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace('/')
+      return
     }
+    setAuthChecked(true)
   }, [router])
+
+  if (authChecked !== true) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <p className="text-slate-400 text-sm">Chargement...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50">

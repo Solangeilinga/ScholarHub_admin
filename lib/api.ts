@@ -88,10 +88,10 @@ api.interceptors.request.use((config) => {
 export const authApi = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
-  resetPassword: (token: string, password: string) =>
-    api.post('/auth/reset-password', { token, password }),
   verifyEmail: (token: string) =>
     api.get(`/auth/verify-email/${token}`),
+  resetPassword: (token: string, password: string) =>
+    api.post('/auth/reset-password', { token, password }),
 }
 
 export const scholarshipApi = {
@@ -129,7 +129,6 @@ export const userApi = {
     invalidateGetCache(['/admin/users'])
     return res
   },
-  resetPassword: (id: string) => api.post(`/admin/users/${id}/reset-password`),
   delete: async (id: string) => {
     const res = await api.delete(`/admin/users/${id}`)
     invalidateGetCache(['/admin/users'])

@@ -134,6 +134,8 @@ export const userApi = {
     invalidateGetCache(['/admin/users'])
     return res
   },
+  resetPassword: (id: string) =>
+    api.post(`/admin/users/${id}/reset-password`),
 }
 
 export const supportApi = {

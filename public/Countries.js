@@ -56,3 +56,39 @@ const COUNTRIES = [
 ];
 
 export default COUNTRIES;
+
+// Raccourcis régionaux pour éviter de cocher les pays un par un sur les
+// bourses qui couvrent une zone entière. Ce sont des regroupements courants
+// et pratiques, pas des définitions géopolitiques strictes — l'admin peut
+// toujours ajuster la sélection après avoir cliqué un préréglage.
+export const REGION_PRESETS = [
+  {
+    label: '🌍 Toute l\'Afrique',
+    codes: COUNTRIES.map(c => c.code),
+  },
+  {
+    label: '🇫🇷 Afrique francophone',
+    codes: ['DZ', 'BJ', 'BF', 'BI', 'CM', 'CF', 'TD', 'KM', 'CG', 'CD', 'CI',
+      'DJ', 'GA', 'GN', 'GQ', 'MG', 'ML', 'MA', 'MR', 'NE', 'RW', 'SN', 'SC',
+      'TG', 'TN'],
+  },
+  {
+    label: '🇬🇧 Afrique anglophone',
+    codes: ['BW', 'ET', 'GM', 'GH', 'KE', 'LS', 'LR', 'MW', 'MU', 'NA', 'NG',
+      'SL', 'SO', 'ZA', 'SS', 'SD', 'TZ', 'UG', 'ZM', 'ZW', 'SZ'],
+  },
+  {
+    label: '🕌 Maghreb / Afrique du Nord',
+    codes: ['DZ', 'MA', 'TN', 'LY', 'EG', 'MR'],
+  },
+  {
+    label: '🌊 CEDEAO / Afrique de l\'Ouest',
+    codes: ['BJ', 'BF', 'CV', 'CI', 'GM', 'GH', 'GN', 'GW', 'LR', 'ML', 'NE',
+      'NG', 'SN', 'SL', 'TG'],
+  },
+  {
+    label: '🦁 Afrique australe',
+    codes: ['ZA', 'NA', 'BW', 'ZW', 'ZM', 'MW', 'MZ', 'AO', 'LS', 'SZ', 'MG',
+      'MU', 'SC'],
+  },
+];

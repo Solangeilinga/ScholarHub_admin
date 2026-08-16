@@ -55,6 +55,21 @@ export default function UsersPage() {
     }
   }
 
+  const handleResetPassword = async (u: User) => {
+    if (!confirm(`Envoyer un lien de réinitialisation de mot de passe à "${u.email}" ?`)) return
+
+    setError('')
+    setBusyId(u.id)
+    try {
+      await userApi.resetPassword(u.id)
+      alert(`Lien envoyé à ${u.email}`)
+    } catch (e: any) {
+      setError(e?.response?.data?.error || 'Une erreur est survenue')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   const handleDelete = async (u: User) => {
     if (!confirm(`Confirmer la suppression définitive du compte "${u.name}" (${u.email}) ?`)) return
 
@@ -148,6 +163,13 @@ export default function UsersPage() {
             <td className="px-6 py-4">
               <div className="flex items-center justify-end gap-2">
                 <button
+                  disabled={busyId === u.id}
+                  onClick={() => handleResetPassword(u)}
+                  className="px-3 py-2 text-sm md:text-base rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition disabled:opacity-40"
+                >
+                  🔑 Reset mdp
+                </button>
+                <button
                   disabled={busyId === u.id || (u.id === currentUserId && u.role === 'ADMIN')}
                   onClick={() => handleToggleRole(u)}
                   className="px-3 py-2 text-sm md:text-base rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -207,6 +229,13 @@ export default function UsersPage() {
           <p className="text-sm md:text-base text-slate-500">{u.level || '-'}</p>
         </div>
         <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+          <button
+            disabled={busyId === u.id}
+            onClick={() => handleResetPassword(u)}
+            className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition disabled:opacity-40"
+          >
+            🔑 Reset mdp
+          </button>
           <button
             disabled={busyId === u.id || (u.id === currentUserId && u.role === 'ADMIN')}
             onClick={() => handleToggleRole(u)}

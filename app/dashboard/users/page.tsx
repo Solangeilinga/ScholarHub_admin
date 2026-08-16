@@ -28,6 +28,8 @@ export default function UsersPage() {
     try {
       const res = await userApi.getAll()
       setUsers((res as any).data.users || [])
+    } catch (e: any) {
+      setError(e?.response?.data?.error || 'Impossible de charger les utilisateurs')
     } finally {
       setLoading(false)
     }

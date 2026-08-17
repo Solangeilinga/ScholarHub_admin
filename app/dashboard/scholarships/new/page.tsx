@@ -130,11 +130,24 @@ export default function NewScholarshipPage() {
     if (form.countries.length === 0) { setError('Sélectionnez au moins un pays éligible'); return }
     if (form.level.length === 0) { setError('Sélectionnez au moins un niveau d\'études'); return }
 
+    // map/validate type against known TYPES
+    const mapType = (input: string) => {
+      const byValue = TYPES.find(t => t.value === input)
+      if (byValue) return byValue.value
+      const byLabel = TYPES.find(t => t.label.toLowerCase() === input.toLowerCase())
+      if (byLabel) return byLabel.value
+      return null
+    }
+
+    const mappedType = mapType(form.type)
+    if (!mappedType) { setError('Type inconnu — sélectionnez une valeur suggérée ou contactez un administrateur'); return }
+
     setLoading(true)
     setError('')
     try {
       await api.post('/scholarships', {
         ...form,
+        type: mappedType,
         amount: form.amount ? Number(form.amount) : null,
         deadline: new Date(form.deadline).toISOString(),
         startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
@@ -279,7 +292,7 @@ export default function NewScholarshipPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
           <h2 className="font-semibold text-slate-900">💰 Montant, Dates & Durée</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Montant</label>
               <input type="number" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})}
@@ -288,18 +301,12 @@ export default function NewScholarshipPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Devise</label>
-              <select
-                value={CURRENCIES.includes(form.currency) ? form.currency : 'AUTRE'}
-                onChange={e => setForm({...form, currency: e.target.value === 'AUTRE' ? '' : e.target.value})}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                <option value="AUTRE">Autre (préciser)</option>
-              </select>
-              {!CURRENCIES.includes(form.currency) && (
-                <input value={form.currency} onChange={e => setForm({...form, currency: e.target.value.toUpperCase()})}
-                  placeholder="Ex: XOF, GHS, KES..." maxLength={6}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-2" />
-              )}
+              <input list="currencies-list" value={form.currency} onChange={e => setForm({...form, currency: e.target.value.toUpperCase()})}
+                placeholder="Ex: EUR, XOF, GHS..." maxLength={6}
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <datalist id="currencies-list">
+                {CURRENCIES.map(c => <option key={c} value={c} />)}
+              </datalist>
               <p className="text-xs text-slate-400 mt-1">
                 Indique la devise réelle de la bourse (montant tel qu'annoncé par le bailleur) — pas de conversion approximative.
               </p>
@@ -332,10 +339,12 @@ export default function NewScholarshipPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Type de bourse</label>
-              <select value={form.type} onChange={e => setForm({...form, type: e.target.value})}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
+              <input list="types-list" value={form.type} onChange={e => setForm({...form, type: e.target.value})}
+                placeholder="Ex: Partielle (réduction des frais)"
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <datalist id="types-list">
+                {TYPES.map(t => <option key={t.value} value={t.label} />)}
+              </datalist>
             </div>
           </div>
 

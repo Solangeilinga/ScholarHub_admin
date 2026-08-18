@@ -14,6 +14,7 @@ export default function EditScholarshipPage() {
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState('')
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false)
   const [form, setForm] = useState({
     title: '',
     provider: '',
@@ -145,14 +146,14 @@ export default function EditScholarshipPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Titre *</label>
             <input required value={form.title} onChange={e => setForm({...form, title: e.target.value})}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Fournisseur *</label>
               <input required value={form.provider} onChange={e => setForm({...form, provider: e.target.value})}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -160,7 +161,7 @@ export default function EditScholarshipPage() {
               </label>
               <input value={form.providerLogo} onChange={e => setForm({...form, providerLogo: e.target.value})}
                 placeholder="https://exemple.com/logo.png"
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
           </div>
 
@@ -175,13 +176,13 @@ export default function EditScholarshipPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Description *</label>
             <textarea required rows={5} value={form.description} onChange={e => setForm({...form, description: e.target.value})}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Conditions requises</label>
             <textarea rows={3} value={form.requirements} onChange={e => setForm({...form, requirements: e.target.value})}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
           </div>
 
           <div>
@@ -190,7 +191,7 @@ export default function EditScholarshipPage() {
             </label>
             <textarea rows={4} value={form.benefits} onChange={e => setForm({...form, benefits: e.target.value})}
               placeholder={"Frais de scolarité couverts\nBillet d'avion aller-retour\nAllocation mensuelle de 800€"}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none font-mono" />
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none font-mono" />
             <p className="text-xs text-slate-400 mt-1">
               {form.benefits ? form.benefits.split('\n').filter(Boolean).length : 0} avantage(s) · Chaque ligne = un avantage dans l'app
             </p>
@@ -199,7 +200,7 @@ export default function EditScholarshipPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Lien de candidature *</label>
             <input required value={form.link} onChange={e => setForm({...form, link: e.target.value})}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
 
@@ -212,12 +213,12 @@ export default function EditScholarshipPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1">Montant</label>
               <input type="number" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})}
                 placeholder="Ex: 10000"
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Devise</label>
               <input list="currencies-list" value={form.currency} onChange={e => setForm({...form, currency: e.target.value})}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Ex: EUR" />
               <datalist id="currencies-list">
                 {['EUR','USD','GBP','CAD','XOF','XAF','CNY','JPY','AUD','NGN'].map(c => <option key={c} value={c} />)}
@@ -229,14 +230,14 @@ export default function EditScholarshipPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Deadline *</label>
               <input required type="date" value={form.deadline} onChange={e => setForm({...form, deadline: e.target.value})}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Date de début <span className="text-slate-400 font-normal">(optionnel)</span>
               </label>
               <input type="date" value={form.startDate} onChange={e => setForm({...form, startDate: e.target.value})}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
           </div>
 
@@ -247,16 +248,37 @@ export default function EditScholarshipPage() {
               </label>
               <input value={form.duration} onChange={e => setForm({...form, duration: e.target.value})}
                 placeholder="Ex: 12 mois, 2 ans..."
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
-            <div>
+
+            {/* Type de bourse — combobox : sélection dans la liste OU saisie libre */}
+            <div className="relative">
               <label className="block text-sm font-medium text-slate-700 mb-1">Type de bourse</label>
-              <input list="types-list" value={form.type} onChange={e => setForm({...form, type: e.target.value})}
+              <input
+                value={form.type}
+                onChange={e => setForm({...form, type: e.target.value})}
+                onFocus={() => setShowTypeDropdown(true)}
+                onBlur={() => setTimeout(() => setShowTypeDropdown(false), 150)}
                 placeholder="Ex: Partielle (réduction des frais)"
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <datalist id="types-list">
-                {TYPES.map(t => <option key={t.value} value={t.label} />)}
-              </datalist>
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {showTypeDropdown && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                  {TYPES.filter(t => t.label.toLowerCase().includes(form.type.toLowerCase())).map(t => (
+                    <button
+                      type="button"
+                      key={t.value}
+                      onMouseDown={() => { setForm({...form, type: t.label}); setShowTypeDropdown(false) }}
+                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50"
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                  {TYPES.filter(t => t.label.toLowerCase().includes(form.type.toLowerCase())).length === 0 && (
+                    <div className="px-4 py-2 text-sm text-slate-500">Aucune correspondance — la valeur libre sera acceptée</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

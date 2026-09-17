@@ -32,8 +32,11 @@ const initialForm = {
   duration: '',
   type: 'COMPLETE',
   typeDetails: '',
-  level: [] as string[],
-  countries: [] as string[],
+  // Par défaut, on part du cas le plus courant (bourse ouverte à tous les
+  // niveaux et à toute l'Afrique) : l'admin décoche ce qui ne s'applique pas,
+  // plutôt que de devoir tout cocher pour le cas général.
+  level: [...LEVELS] as string[],
+  countries: COUNTRIES.map(c => c.code) as string[],
   fields: [] as string[],
   languages: [] as string[],
   isFeatured: false,
@@ -354,8 +357,17 @@ export default function NewScholarshipPage() {
 
         {/* Niveaux */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900 mb-1">🎓 Niveaux Requis *</h2>
-          <p className="text-xs text-slate-400 mb-4">Sélectionnez un ou plusieurs niveaux</p>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-semibold text-slate-900">🎓 Niveaux Requis *</h2>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setForm({...form, level: [...LEVELS]})}
+                className="text-xs text-indigo-600 hover:underline">Tous</button>
+              <span className="text-slate-300">|</span>
+              <button type="button" onClick={() => setForm({...form, level: []})}
+                className="text-xs text-slate-400 hover:underline">Aucun</button>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 mb-4">Tous les niveaux sont sélectionnés par défaut — décochez ceux qui ne s'appliquent pas</p>
           <div className="flex flex-wrap gap-2">
             {LEVELS.map(l => (
               <button key={l} type="button" onClick={() => toggle('level', l)}
@@ -378,7 +390,7 @@ export default function NewScholarshipPage() {
                 className="text-xs text-slate-400 hover:underline">Effacer</button>
             </div>
           </div>
-          <p className="text-xs text-slate-400 mb-3">{form.countries.length} pays sélectionné(s)</p>
+          <p className="text-xs text-slate-400 mb-3">Toute l'Afrique est sélectionnée par défaut ({form.countries.length} pays) — décochez ce qui ne s'applique pas, ou utilisez un préréglage régional</p>
 
           <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-slate-100">
             {REGION_PRESETS.map(preset => (

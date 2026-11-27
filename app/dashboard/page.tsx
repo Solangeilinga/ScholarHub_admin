@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { scholarshipApi, userApi } from '@/lib/api'
+import { scholarshipApi, api } from '@/lib/api'
 import Link from 'next/link'
 
 export default function DashboardPage() {
@@ -11,20 +11,18 @@ export default function DashboardPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [statsRes, usersRes, scholarshipsRes] = await Promise.all([
-          scholarshipApi.getStats(),
-          userApi.getAll(),
-          scholarshipApi.getAll({ limit: 5, sort: 'recent' }),
+        const [statsRes, scholarshipsRes] = await Promise.all([
+          api.get('/admin/stats'),
+          scholarshipApi.getAllAdmin({ limit: 5 }),
         ])
-        const s = (statsRes as any).data?.stats || (statsRes as any).data
-const users = (usersRes as any).data?.users
-setStats({
-  total: s?.total ?? 0,
-  active: s?.active ?? 0,
-  users: users?.length ?? 0,
-  applications: 0,
-})
-        setRecentScholarships((scholarshipsRes as any).data?.scholarships || [])
+        const s = statsRes.data?.stats
+        setStats({
+          total: s?.totalScholarships ?? 0,
+          active: s?.activeScholarships ?? 0,
+          users: s?.totalUsers ?? 0,
+          applications: s?.totalApplications ?? 0,
+        })
+        setRecentScholarships(scholarshipsRes.data?.scholarships || [])
       } catch (e) {
         console.error(e)
       } finally {

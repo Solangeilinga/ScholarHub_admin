@@ -284,7 +284,7 @@ function AddAdminModal({ onClose, onCreated }: { onClose: () => void; onCreated:
     const digits = '23456789'
     const symbols = '!@#$%'
     const pool = upper + lower + digits + symbols
-    const randomValues = window.crypto.getRandomValues(new Uint32Array(20))
+    const randomValues = window.crypto.getRandomValues(new Uint32Array(27))
     const chars = [
       upper[randomValues[0] % upper.length],
       lower[randomValues[1] % lower.length],

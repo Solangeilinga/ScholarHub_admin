@@ -5,6 +5,25 @@ import api, { scraperApi } from '@/lib/api'
 
 type Tab = 'all' | 'pending'
 
+function safeExternalUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  try {
+    const url = new URL(value)
+    if (!['http:', 'https:'].includes(url.protocol) ||
+        !url.hostname.includes('.') ||
+        url.username || url.password ||
+        url.hostname === 'localhost' ||
+        url.hostname.endsWith('.localhost') ||
+        url.hostname.endsWith('.local') ||
+        /^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname)) {
+      return null
+    }
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
 export default function ScholarshipsPage() {
   const [tab, setTab] = useState<Tab>('all')
   const [scholarships, setScholarships] = useState<any[]>([])
@@ -263,10 +282,10 @@ const handleRunScraping = async () => {
                             </span>
                           </>
                         )}
-                        {s.link && (
+                        {safeExternalUrl(s.link) && (
                           <>
                             <span className="text-slate-300">·</span>
-                            <a href={s.link} target="_blank" rel="noopener noreferrer"
+                            <a href={safeExternalUrl(s.link) || undefined} target="_blank" rel="noopener noreferrer"
                               className="text-sm text-indigo-500 hover:underline">
                               🔗 Annonce originale
                             </a>

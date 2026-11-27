@@ -14,7 +14,6 @@ type Scholarship = {
 }
 
 type ScraperStats = {
-  pending: number
   approved: number
   rejected: number
   total: number
@@ -30,7 +29,7 @@ type ScraperStats = {
         processed?: number
         inserted?: number
         autoPublished?: number
-        sentToReview?: number
+        ignoredUnreliable?: number
         errors?: number
       } | null
       lastError?: string | null
@@ -46,20 +45,14 @@ type ScraperStats = {
 
 export default function ScraperPage() {
   const [stats, setStats] = useState<ScraperStats | null>(null)
-  const [pending, setPending] = useState<Scholarship[]>([])
   const [loading, setLoading] = useState(true)
   const [running, setRunning] = useState(false)
-  const [busyId, setBusyId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const [statsResponse, pendingResponse] = await Promise.all([
-        scraperApi.getStats(),
-        scraperApi.getPending(),
-      ])
+      const statsResponse = await scraperApi.getStats()
       setStats(statsResponse.data?.stats || null)
-      setPending(pendingResponse.data?.scholarships || [])
     } catch (error) {
       console.error('Erreur de chargement du scraper', error)
       setMessage('Impossible de récupérer les informations du scraper. Vérifie la connexion au serveur.')
@@ -88,20 +81,6 @@ export default function ScraperPage() {
     }
   }
 
-  const moderate = async (id: string, action: 'approve' | 'reject') => {
-    setBusyId(id)
-    try {
-      if (action === 'approve') await scraperApi.approve(id)
-      else await scraperApi.reject(id)
-      setMessage(action === 'approve' ? 'Bourse approuvée et publiée.' : 'Bourse rejetée.')
-      await load()
-    } catch (error: any) {
-      setMessage(error.response?.data?.error || 'La modification a échoué.')
-    } finally {
-      setBusyId(null)
-    }
-  }
-
   if (loading) {
     return <div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-indigo-600" /></div>
   }
@@ -117,7 +96,7 @@ export default function ScraperPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">Automatisation des bourses</h1>
-          <p className="mt-2 text-slate-500">Suivi de la collecte, de l’analyse IA et de la validation des offres.</p>
+          <p className="mt-2 text-slate-500">Suivi de la collecte, de l’analyse IA et de la publication automatique des offres fiables.</p>
         </div>
         <button onClick={run} disabled={running} className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60">
           {running ? 'Lancement…' : '↻ Lancer une collecte'}
@@ -130,7 +109,7 @@ export default function ScraperPage() {
         {[
           { label: 'Offres collectées', value: stats?.total ?? 0 },
           { label: 'Publiées', value: stats?.approved ?? 0 },
-          { label: 'À vérifier', value: stats?.pending ?? 0 },
+          { label: 'Confiance moyenne', value: stats?.avgConfidence == null ? '—' : `${Math.round(stats.avgConfidence * 100)} %` },
           { label: 'Rejetées', value: stats?.rejected ?? 0 },
         ].map((item) => (
           <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -164,9 +143,8 @@ export default function ScraperPage() {
             {[
               ['Liens trouvés', automation.run.lastResult.candidatesFound ?? 0],
               ['Pages analysées', automation.run.lastResult.processed ?? 0],
-              ['Enregistrées', automation.run.lastResult.inserted ?? 0],
               ['Publiées', automation.run.lastResult.autoPublished ?? 0],
-              ['À vérifier', automation.run.lastResult.sentToReview ?? 0],
+              ['Ignorées', automation.run.lastResult.ignoredUnreliable ?? 0],
               ['Erreurs', automation.run.lastResult.errors ?? 0],
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-lg bg-slate-50 p-3">
@@ -212,36 +190,11 @@ export default function ScraperPage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold text-slate-900">Offres en attente de vérification</h2>
-            <p className="mt-1 text-sm text-slate-500">Les offres incertaines ne sont pas publiées automatiquement.</p>
-          </div>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">{pending.length}</span>
-        </div>
-        {pending.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-400">Aucune offre en attente.</p>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {pending.map((scholarship) => (
-              <article key={scholarship.id} className="py-4">
-                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-slate-900">{scholarship.title}</h3>
-                    <p className="mt-1 text-sm text-slate-500">{scholarship.provider} · {scholarship.source || 'Source inconnue'}</p>
-                    <p className="mt-1 text-xs text-slate-500">Confiance : {typeof scholarship.confidenceScore === 'number' ? `${Math.round(scholarship.confidenceScore * 100)} %` : 'Non évaluée'}</p>
-                    {scholarship.extractionNotes && <p className="mt-2 text-sm text-amber-700">{scholarship.extractionNotes}</p>}
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <button onClick={() => moderate(scholarship.id, 'approve')} disabled={busyId === scholarship.id} className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">Approuver</button>
-                    <button onClick={() => moderate(scholarship.id, 'reject')} disabled={busyId === scholarship.id} className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50">Rejeter</button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+      <section className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 md:p-6">
+        <h2 className="font-semibold text-emerald-900">Publication sans validation manuelle</h2>
+        <p className="mt-1 text-sm text-emerald-800">
+          Les bourses atteignant au moins 85 % de confiance sont publiées automatiquement si leur source est reconnue et si les informations essentielles sont cohérentes. Les annonces qui échouent à ces contrôles sont ignorées et ne sont plus placées dans une file d’approbation.
+        </p>
       </section>
     </div>
   )

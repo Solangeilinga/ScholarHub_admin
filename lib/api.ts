@@ -109,6 +109,7 @@ api.interceptors.response.use(
       sessionStorage.removeItem('admin_user_id')
       localStorage.removeItem('admin_token')
       localStorage.removeItem('admin_user_id')
+      invalidateGetCache()
       if (window.location.pathname !== '/') {
         window.location.href = '/'
       }
@@ -117,9 +118,13 @@ api.interceptors.response.use(
   }
 )
 
+export const clearApiCache = () => invalidateGetCache()
+
 export const authApi = {
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+  login: async (email: string, password: string) => {
+    invalidateGetCache()
+    return api.post('/auth/login', { email, password })
+  },
   verifyEmail: (token: string) =>
     api.get(`/auth/verify-email/${token}`),
   resetPassword: (token: string, password: string) =>

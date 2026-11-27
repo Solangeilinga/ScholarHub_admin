@@ -20,6 +20,21 @@ type ScraperStats = {
   total: number
   avgConfidence: number | null
   automation?: {
+    run?: {
+      state: 'IDLE' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+      startedAt?: string | null
+      finishedAt?: string | null
+      durationMs?: number | null
+      lastResult?: {
+        candidatesFound?: number
+        processed?: number
+        inserted?: number
+        autoPublished?: number
+        sentToReview?: number
+        errors?: number
+      } | null
+      lastError?: string | null
+    }
     aiExtractionReady: boolean
     webDiscoveryReady: boolean
     discoveryProvider: string
@@ -123,6 +138,45 @@ export default function ScraperPage() {
             <p className="mt-1 text-sm text-slate-500">{item.label}</p>
           </div>
         ))}
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-semibold text-slate-900">Dernière exécution</h2>
+            <p className="mt-1 text-sm text-slate-500">État réel du dernier traitement connu par le serveur.</p>
+          </div>
+          <span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+            automation?.run?.state === 'RUNNING' ? 'bg-blue-100 text-blue-700' :
+            automation?.run?.state === 'SUCCEEDED' ? 'bg-green-100 text-green-700' :
+            automation?.run?.state === 'FAILED' ? 'bg-red-100 text-red-700' :
+            'bg-slate-100 text-slate-600'
+          }`}>
+            {automation?.run?.state === 'RUNNING' ? 'En cours' :
+              automation?.run?.state === 'SUCCEEDED' ? 'Terminée' :
+              automation?.run?.state === 'FAILED' ? 'Échec' : 'Aucune exécution connue'}
+          </span>
+        </div>
+        {automation?.run?.startedAt && <p className="mt-3 text-sm text-slate-600">Démarrée : {new Date(automation.run.startedAt).toLocaleString('fr-FR')}</p>}
+        {automation?.run?.finishedAt && <p className="mt-1 text-sm text-slate-600">Terminée : {new Date(automation.run.finishedAt).toLocaleString('fr-FR')} · Durée : {Math.round((automation.run.durationMs || 0) / 1000)} s</p>}
+        {automation?.run?.lastResult && (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              ['Liens trouvés', automation.run.lastResult.candidatesFound ?? 0],
+              ['Pages analysées', automation.run.lastResult.processed ?? 0],
+              ['Enregistrées', automation.run.lastResult.inserted ?? 0],
+              ['Publiées', automation.run.lastResult.autoPublished ?? 0],
+              ['À vérifier', automation.run.lastResult.sentToReview ?? 0],
+              ['Erreurs', automation.run.lastResult.errors ?? 0],
+            ].map(([label, value]) => (
+              <div key={String(label)} className="rounded-lg bg-slate-50 p-3">
+                <p className="text-xl font-bold text-slate-900">{value}</p>
+                <p className="text-xs text-slate-500">{label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+        {automation?.run?.lastError && <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{automation.run.lastError}</p>}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">

@@ -8,6 +8,7 @@ import { authApi, clearApiCache } from '@/lib/api'
 const links = [
   { href: '/dashboard', icon: '📊', label: 'Dashboard' },
   { href: '/dashboard/scholarships', icon: '🎓', label: 'Bourses' },
+  { href: '/dashboard/scraper', icon: '🤖', label: 'Automatisation' },
   { href: '/dashboard/users', icon: '👥', label: 'Utilisateurs' },
   { href: '/dashboard/support', icon: '💬', label: 'Assistance' },
 ]

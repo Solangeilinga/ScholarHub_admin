@@ -255,12 +255,20 @@ const handleRunScraping = async () => {
                         <span className="text-sm text-slate-400">
                           📅 {s.deadline ? new Date(s.deadline).toLocaleDateString('fr-FR') : 'Non définie'}
                         </span>
-                        {s.source && (
+                        {typeof s.confidenceScore === 'number' && (
                           <>
                             <span className="text-slate-300">·</span>
-                            <a href={s.source} target="_blank" rel="noopener noreferrer"
+                            <span className="text-sm font-medium text-amber-700">
+                              Fiabilité : {Math.round(s.confidenceScore * 100)} %
+                            </span>
+                          </>
+                        )}
+                        {s.link && (
+                          <>
+                            <span className="text-slate-300">·</span>
+                            <a href={s.link} target="_blank" rel="noopener noreferrer"
                               className="text-sm text-indigo-500 hover:underline">
-                              🔍 Source
+                              🔗 Annonce originale
                             </a>
                           </>
                         )}
@@ -284,6 +292,12 @@ const handleRunScraping = async () => {
 
                   {/* Description */}
                   <p className="text-sm text-slate-500 mt-2 line-clamp-2">{s.description}</p>
+                  {s.extractionNotes && (
+                    <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                      <p className="text-xs font-semibold text-amber-800">Points à vérifier</p>
+                      <p className="text-sm text-amber-900 mt-1">{s.extractionNotes}</p>
+                    </div>
+                  )}
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1.5 mt-3">

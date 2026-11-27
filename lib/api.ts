@@ -125,6 +125,7 @@ export const authApi = {
     invalidateGetCache()
     return api.post('/auth/login', { email, password })
   },
+  logout: () => api.post('/auth/logout'),
   verifyEmail: (token: string) =>
     api.get(`/auth/verify-email/${token}`),
   resetPassword: (token: string, password: string) =>

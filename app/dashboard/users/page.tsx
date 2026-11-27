@@ -279,10 +279,24 @@ function AddAdminModal({ onClose, onCreated }: { onClose: () => void; onCreated:
   const [loading, setLoading] = useState(false)
 
   const generatePassword = () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%'
-    let pwd = ''
-    for (let i = 0; i < 14; i++) pwd += chars[Math.floor(Math.random() * chars.length)]
-    setPassword(pwd)
+    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+    const lower = 'abcdefghijkmnpqrstuvwxyz'
+    const digits = '23456789'
+    const symbols = '!@#$%'
+    const pool = upper + lower + digits + symbols
+    const randomValues = window.crypto.getRandomValues(new Uint32Array(20))
+    const chars = [
+      upper[randomValues[0] % upper.length],
+      lower[randomValues[1] % lower.length],
+      digits[randomValues[2] % digits.length],
+      symbols[randomValues[3] % symbols.length],
+      ...Array.from({ length: 10 }, (_, index) => pool[randomValues[index + 4] % pool.length]),
+    ]
+    for (let i = chars.length - 1; i > 0; i--) {
+      const j = randomValues[14 + (13 - i)] % (i + 1)
+      ;[chars[i], chars[j]] = [chars[j], chars[i]]
+    }
+    setPassword(chars.join(''))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

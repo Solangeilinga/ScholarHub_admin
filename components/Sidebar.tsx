@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { removeToken } from '@/lib/auth'
+import { clearApiCache } from '@/lib/api'
 
 const links = [
   { href: '/dashboard', icon: '📊', label: 'Dashboard' },
@@ -22,6 +23,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   const logout = () => {
     removeToken()
+    clearApiCache()
     router.push('/')
   }
 

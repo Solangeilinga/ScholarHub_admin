@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { removeToken } from '@/lib/auth'
-import { clearApiCache } from '@/lib/api'
+import { authApi, clearApiCache } from '@/lib/api'
 
 const links = [
   { href: '/dashboard', icon: '📊', label: 'Dashboard' },
@@ -21,10 +21,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const logout = () => {
-    removeToken()
-    clearApiCache()
-    router.push('/')
+  const logout = async () => {
+    try {
+      await authApi.logout()
+    } catch {
+      // La déconnexion locale reste possible même si le serveur est indisponible.
+    } finally {
+      removeToken()
+      clearApiCache()
+      router.push('/')
+    }
   }
 
   return (

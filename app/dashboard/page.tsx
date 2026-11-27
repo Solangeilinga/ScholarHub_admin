@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { scholarshipApi, api } from '@/lib/api'
+import api, { scholarshipApi } from '@/lib/api'
 import Link from 'next/link'
 
 export default function DashboardPage() {

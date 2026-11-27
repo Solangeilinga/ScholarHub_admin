@@ -3,6 +3,19 @@ import axios from 'axios'
 const API_URL = "https://scholarhub-backend-n8de.onrender.com/api"
 const GET_CACHE_TTL_MS = 30000
 
+function getAdminSessionValue(key: string) {
+  if (typeof window === 'undefined') return null
+  const current = sessionStorage.getItem(key)
+  if (current) return current
+  // Migration de l'ancienne session persistante vers une session limitée à l'onglet.
+  const legacy = localStorage.getItem(key)
+  if (legacy) {
+    sessionStorage.setItem(key, legacy)
+    localStorage.removeItem(key)
+  }
+  return legacy
+}
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000, // ← 30s pour laisser le temps à Render de se réveiller
@@ -79,7 +92,7 @@ if (typeof window !== 'undefined') {
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('admin_token')
+    const token = getAdminSessionValue('admin_token')
     if (token) config.headers.Authorization = `Bearer ${token}`
   }
   return config
@@ -92,6 +105,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
+      sessionStorage.removeItem('admin_token')
+      sessionStorage.removeItem('admin_user_id')
       localStorage.removeItem('admin_token')
       localStorage.removeItem('admin_user_id')
       if (window.location.pathname !== '/') {

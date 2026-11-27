@@ -3,16 +3,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { scraperApi } from '@/lib/api'
 
-type Scholarship = {
-  id: string
-  title: string
-  provider: string
-  confidenceScore?: number | null
-  source?: string | null
-  scrapedAt?: string | null
-  extractionNotes?: string | null
-}
-
 type ScraperStats = {
   approved: number
   rejected: number
@@ -27,7 +17,6 @@ type ScraperStats = {
       lastResult?: {
         candidatesFound?: number
         processed?: number
-        inserted?: number
         autoPublished?: number
         ignoredUnreliable?: number
         errors?: number
